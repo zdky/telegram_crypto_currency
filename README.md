@@ -80,7 +80,7 @@ pip install -r requirements.txt
 - **Step 7**: Grant rights:
 
 ```bash
-chmod +x start.py
+chmod +x app.py
 ```
 
 - **Step 8**: Create service:
