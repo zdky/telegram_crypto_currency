@@ -39,50 +39,37 @@ tg_post_id = 123
 
 # не трогаем
 tg_chat_id = int(f"-100{tg_public_id}")
-
+tz = timezone(timedelta(hours=3))
+old_msg = ""
+# ----------
 
 async def edit_tg_post(msg):
-    msg += "\n\n<b><i><a href='https://github.com/zdky/telegram_crypto_currency'>как это сделано?</a></i></b>"
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            f'https://api.telegram.org/bot{tg_token}/editMessageText',
-            data={
-                'chat_id': tg_chat_id,
-                'message_id': tg_post_id,
-                'text': dedent(msg),
-                "disable_web_page_preview": True,
-                "disable_notification": True,
-                "parse_mode": "HTML"
-            }
-        ) as response:
-            if response.status != 200:
-                print(f"[Telegram] Ошибка редакта поста: {await response.text()}")
+    if msg != old_msg: # если курс не изменился, не редачим
+        msg += f"\n\n⏳ <b>Обновлено:</b> {datetime.now(tz).strftime('%H:%M:%S %d/%m (MSK)')}"
+        msg += "\n\n<b><i><a href='https://github.com/zdky/telegram_crypto_currency/blob/main/app.py'>как это сделано?</a></i></b>"
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    f'https://api.telegram.org/bot{tg_token}/editMessageText',
+                    data={
+                        'chat_id': tg_chat_id,
+                        'message_id': tg_post_id,
+                        'text': dedent(msg),
+                        "disable_web_page_preview": True,
+                        "disable_notification": True,
+                        "parse_mode": "HTML"
+                    }
+                ) as response:
+                    if response.status != 200:
+                        print(f"[Telegram] Ошибка редакта поста: {await response.text()}")
+        except Exception as error:
+            print(f"[ERROR] in edit_tg_post(): {error}")
 
-# первый формат
+
 def generate_msg(prices):
     msg = ""
     for idx, currency in enumerate(CUR.values()):
-        if currency == "NOT":
-            price = f"{prices[currency]:.4f}"
-        else:
-            price = f"{prices[currency]:.2f}"
-        cur_name = f"<b><a href='{LINKS[currency]}'>{currency}</a>:</b>"
-        
-        part = f"{cur_name} {price}"
-        # Добавляем разделитель если не последний элемент и не конец строки
-        if (idx + 1) % 3 != 0 and idx != len(CUR) - 1:
-            part += "┃"
-        # Добавляем перенос строки после каждых трех элементов
-        if (idx + 1) % 3 == 0 and idx != len(CUR) - 1:
-            part += "\n\n"
-        msg += part
-    return msg
-
-# второй формат, выбирай какой по кайфу
-def generate_msg2(prices):
-    msg = ""
-    for idx, currency in enumerate(CUR.values()):
-        if currency == "NOT":
+        if currency in ["NOT"]: # для мелких токенов
             price = f"{prices[currency]:.4f}"
         else:
             price = f"{prices[currency]:.2f}"
@@ -96,6 +83,7 @@ def generate_msg2(prices):
 
 
 async def parser_CMC_json(data, prices):
+    global old_msg
     if 'd' in data and 'id' in data['d']:
         cur_id = data['d']['id']
         price = data['d']['p']
@@ -105,6 +93,7 @@ async def parser_CMC_json(data, prices):
             if all(currency in prices for currency in CUR.values()):
                 msg = generate_msg(prices)
                 await edit_tg_post(msg)
+                old_msg = msg
                 # Очищаем словарь, чтобы начать сбор данных заново
                 prices = {}
     return prices
