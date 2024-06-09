@@ -58,7 +58,7 @@ async def edit_tg_post(msg):
             if response.status != 200:
                 print(f"[Telegram] Ошибка редакта поста: {await response.text()}")
 
-
+# первый формат
 def generate_msg(prices):
     msg = ""
     for idx, currency in enumerate(CUR.values()):
@@ -75,6 +75,22 @@ def generate_msg(prices):
         # Добавляем перенос строки после каждых трех элементов
         if (idx + 1) % 3 == 0 and idx != len(CUR) - 1:
             part += "\n\n"
+        msg += part
+    return msg
+
+# второй формат, выбирай какой по кайфу
+def generate_msg2(prices):
+    msg = ""
+    for idx, currency in enumerate(CUR.values()):
+        if currency == "NOT":
+            price = f"{prices[currency]:.4f}"
+        else:
+            price = f"{prices[currency]:.2f}"
+        cur_name = f"<b><a href='{LINKS[currency]}'>{currency}</a>:</b>"
+        if idx == len(CUR) - 1:
+            part = f"┃{cur_name} {price} $"
+        else:
+            part = f"┃{cur_name} {price} $\n"
         msg += part
     return msg
 
