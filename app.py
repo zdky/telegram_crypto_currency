@@ -12,7 +12,18 @@ CUR = {
     1: "BTC",
     5426: "SOL",
     11419: "TON",
-    # 1027: "ETH"
+    1027: "ETH",
+    28850: "NOT",
+    1839: "BNB"
+}
+# ссылки сам вбивай, иначе всё упадёт
+LINKS = {
+    "BTC": "https://coinmarketcap.com/currencies/bitcoin/",
+    "SOL": "https://coinmarketcap.com/currencies/solana/",
+    "TON": "https://coinmarketcap.com/currencies/toncoin/",
+    "ETH": "https://coinmarketcap.com/currencies/ethereum/",
+    "NOT": "https://coinmarketcap.com/currencies/notcoin/",
+    "BNB": "https://coinmarketcap.com/currencies/bnb/"
 }
 # как часто обновлять инфу в посте (1, 5, 10 и т.д)
 upd_every_s = 5 # сек
@@ -48,6 +59,26 @@ async def edit_tg_post(msg):
                 print(f"[Telegram] Ошибка редакта поста: {await response.text()}")
 
 
+def generate_msg(prices):
+    msg = ""
+    for idx, currency in enumerate(CUR.values()):
+        if currency == "NOT":
+            price = f"{prices[currency]:.4f}"
+        else:
+            price = f"{prices[currency]:.2f}"
+        cur_name = f"<b><a href='{LINKS[currency]}'>{currency}</a>:</b>"
+        
+        part = f"{cur_name} {price}"
+        # Добавляем разделитель если не последний элемент и не конец строки
+        if (idx + 1) % 3 != 0 and idx != len(CUR) - 1:
+            part += "┃"
+        # Добавляем перенос строки после каждых трех элементов
+        if (idx + 1) % 3 == 0 and idx != len(CUR) - 1:
+            part += "\n\n"
+        msg += part
+    return msg
+
+
 async def parser_CMC_json(data, prices):
     if 'd' in data and 'id' in data['d']:
         cur_id = data['d']['id']
@@ -56,10 +87,7 @@ async def parser_CMC_json(data, prices):
             prices[CUR[cur_id]] = price
             # Если собраны все данные для заданных валют, выводим их
             if all(currency in prices for currency in CUR.values()):
-                msg = "┃".join(
-                    f"<b>{currency}:</b> {prices[currency]:.2f}" 
-                    for currency in CUR.values()
-                )
+                msg = generate_msg(prices)
                 await edit_tg_post(msg)
                 # Очищаем словарь, чтобы начать сбор данных заново
                 prices = {}
