@@ -12,7 +12,7 @@
         <img src="https://img.shields.io/badge/Telegram-Join-Blue.svg?style=flat-square&logo=telegram&logoColor=white&color=blue" alt="Telegram">
     </a>
     <a href="https://www.donationalerts.com/r/zhidky" target="_blank">
-        <img src="https://img.shields.io/badge/PayPal-Thanks-blue.svg?style=flat-square&logo=paypal&logoColor=fff" alt="Support me">
+        <img src="https://img.shields.io/badge/DonationAlerts-Thanks-blue.svg?style=flat-square&logo=paypal&logoColor=fff" alt="Support me">
     </a>
 </p>
 
