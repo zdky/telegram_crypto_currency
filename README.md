@@ -18,7 +18,7 @@
 
 ## Features ⚙️
 
-* Edit a public post every 5 seconds
+* Edit a post in telegram channel every 5 seconds
 
 ## Getting Started 🚀
 
